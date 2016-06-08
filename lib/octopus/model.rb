@@ -111,6 +111,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         after_initialize :set_current_shard
 
         class_attribute :custom_octopus_connection
+        class_attribute :must_use_normal_connection
 
         class << self
           attr_accessor :custom_octopus_table_name
