@@ -100,13 +100,16 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         self.allowed_shards += shards
       end
 
+      def not_sharded
+        self.must_use_normal_connection = true
+      end
+
       def hijack_methods
         after_initialize :set_current_shard
 
         around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
 
         class_attribute :custom_octopus_connection
-        class_attribute :force_shard
 
         class << self
           attr_accessor :custom_octopus_table_name
@@ -140,12 +143,10 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def should_use_normal_connection?
-        if !Octopus.enabled?
-          return true
-        elsif superclass == ActiveRecord::Base
-          return !force_shard
+        if !Octopus.enabled? || must_use_normal_connection
+          true
         elsif custom_octopus_connection
-          return !connection_proxy.block || !allowed_shard?(connection_proxy.current_shard)
+          !connection_proxy.block || !allowed_shard?(connection_proxy.current_shard)
         end
       end
 
