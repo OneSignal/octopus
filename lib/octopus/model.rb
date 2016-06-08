@@ -117,6 +117,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
 
         class_attribute :custom_octopus_connection
+        class_attribute :must_use_normal_connection
 
         class << self
           attr_accessor :custom_octopus_table_name
