@@ -107,6 +107,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         after_initialize :set_current_shard
 
         class_attribute :custom_octopus_connection
+        class_attribute :force_shard
 
         class << self
           attr_accessor :custom_octopus_table_name
@@ -132,9 +133,11 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
 
       def should_use_normal_connection?
         if !Octopus.enabled?
-          true
+          return true
+        elsif superclass == ActiveRecord::Base
+          return !force_shard
         elsif custom_octopus_connection
-          !connection_proxy.block || !allowed_shard?(connection_proxy.current_shard)
+          return !connection_proxy.block || !allowed_shard?(connection_proxy.current_shard)
         end
       end
 
@@ -147,6 +150,18 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def connection_with_octopus
+        result = private_connection_with_octopus
+
+        # cur_shard will be used by sql_proxy.rb in the rails app.
+        if result.class == Octopus::Proxy
+          result.select_connection.instance_variable_set("@cur_shard", connection_proxy.current_shard)
+        else
+          method(:connection).super_method.call.instance_variable_set("@cur_shard", connection_proxy.current_shard)
+        end
+        result
+      end
+
+      def private_connection_with_octopus
         if should_use_normal_connection?
           connection_without_octopus
         else
