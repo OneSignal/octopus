@@ -35,6 +35,7 @@ module Octopus
 
     def execute(sql, name = nil)
       conn = select_connection
+
       clean_connection_proxy if should_clean_connection_proxy?('execute')
       conn.execute(sql, name)
     end
