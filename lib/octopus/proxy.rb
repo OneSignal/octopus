@@ -35,19 +35,16 @@ module Octopus
 
     def execute(sql, name = nil)
       conn = select_connection
-      clean_connection_proxy
       conn.execute(sql, name)
     end
 
     def insert(arel, name = nil, pk = nil, id_value = nil, sequence_name = nil, binds = [])
       conn = select_connection
-      clean_connection_proxy
       conn.insert(arel, name, pk, id_value, sequence_name, binds)
     end
 
     def update(arel, name = nil, binds = [])
       conn = select_connection
-      clean_connection_proxy
       conn.update(arel, name, binds)
     end
 
