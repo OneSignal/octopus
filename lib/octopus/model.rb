@@ -145,6 +145,10 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
 
       def connection_with_octopus
         result = private_connection_with_octopus
+        # octopus caches db connection from pool. we need to check that it is still active
+        unless result.active?
+          result.reconnect!
+        end
 
         # cur_shard will be used by sql_proxy.rb in the rails app.
         if result.class == Octopus::Proxy
