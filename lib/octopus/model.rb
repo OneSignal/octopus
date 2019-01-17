@@ -144,7 +144,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def should_use_normal_connection?
-        if !Octopus.enabled? || must_use_normal_connection
+        if !Octopus.enabled? || must_use_normal_connection && !connection_proxy.current_shard.to_s.ends_with?('_replica')
           true
         elsif custom_octopus_connection
           !connection_proxy.block || !allowed_shard?(connection_proxy.current_shard)
