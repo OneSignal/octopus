@@ -30,8 +30,6 @@ module Octopus
         if !record.current_shard.nil? && !current_shard.nil? && record.current_shard.to_s != current_shard.to_s
           raise MismatchedShards.new(record, current_shard)
         end
-
-        record.current_shard = self.class.connection.current_shard = current_shard if should_set_current_shard?
       end
     end
 

@@ -33,14 +33,6 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         base.send(:alias_method, :equality_without_octopus, :==)
         base.send(:alias_method, :==, :equality_with_octopus)
         base.send(:alias_method, :eql?, :==)
-        base.send(:alias_method, :perform_validations_without_octopus, :perform_validations)
-        base.send(:alias_method, :perform_validations, :perform_validations_with_octopus)
-      end
-
-      def set_current_shard
-        return unless Octopus.enabled?
-        shard = self.class.connection_proxy.current_shard
-        self.current_shard = shard if self.class.allowed_shard?(shard)
       end
 
       def init_with(coder)
@@ -65,22 +57,8 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
         obj
       end
 
-      def should_set_current_shard?
-        self.respond_to?(:current_shard) && !current_shard.nil?
-      end
-
       def equality_with_octopus(comparison_object)
         equality_without_octopus(comparison_object) && comparison_object.current_shard.to_s == current_shard.to_s
-      end
-
-      def perform_validations_with_octopus(*args)
-        if Octopus.enabled? && should_set_current_shard?
-          Octopus.using(current_shard) do
-            perform_validations_without_octopus(*args)
-          end
-        else
-          perform_validations_without_octopus(*args)
-        end
       end
     end
 
@@ -112,7 +90,6 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def hijack_methods
-        after_initialize :set_current_shard
 
         around_save :run_on_shard, :unless => lambda { self.class.custom_octopus_connection }
 
