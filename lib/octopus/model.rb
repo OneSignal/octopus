@@ -40,7 +40,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       def set_current_shard
         return unless Octopus.enabled?
         shard = self.class.connection_proxy.current_shard
-        self.current_shard = shard if self.class.allowed_shard?(shard)
+        self.current_shard = shard if self.class.allowed_shard?(shard) && !self.must_use_normal_connection
       end
 
       def init_with(coder)
@@ -66,7 +66,7 @@ If you are trying to scope everything to a specific shard, use Octopus.using ins
       end
 
       def should_set_current_shard?
-        self.respond_to?(:current_shard) && !current_shard.nil?
+        self.respond_to?(:current_shard) && !current_shard.nil? && !must_use_normal_connection
       end
 
       def equality_with_octopus(comparison_object)
